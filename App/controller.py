@@ -30,9 +30,41 @@ El controlador se encarga de mediar entre la vista y el modelo.
 """
 
 # Inicialización del Catálogo de libros
+def initcat():
+    return model.initCat()
 
 # Funciones para la carga de datos
+def loadData(catalog):
+    Dfile = cf.data_dir + 'context_content_features-small.csv'
+    main_file = csv.DictReader(open(Dfile, encoding='utf-8'))
+
+    for event in main_file:
+        model.addEvent(catalog, event)
+
 
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+def reque1(catalog, cc, m, M):
+    a=cc.lower().strip()
+    if a in catalog['sup_inf']:
+        main=catalog[a]
+        ans=model.reque1_SUP(main, m, M)
+        return ans
+    
+    else:
+        cc=catalog['inf_sup'][cc]
+        main=catalog[cc]
+        ans=model.reque1_INF(main, m, M)
+        return ans
+
+
+def reque2(catalog, e, E, d, D):
+    main=catalog['energy']
+    ans=model.reque2(main, e, E, d, D)
+    return ans
+
+def reque3(catalog, e, E, d, D):
+    main=catalog['tempo']
+    ans=model.reque2(main, e, E, d, D)
+    return ans
