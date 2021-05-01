@@ -116,6 +116,35 @@ while True:
         D=float(input('Escriba el valor maximo de la caracteristica INSTRUMENTALNESS: '))
         ans=controller.reque3(catalog, e, E, d, D)
         p_rq3(ans, e, E, d, D)
+
+    elif int(inputs[0])== 5:
+        dic_genres = {'Reggae':{'minimo':60,'maximo': 90},
+                    'Down-tempo':{'minimo':70,'maximo':100},
+                    'Chill-out':{'minimo':90,'maximo':120},
+                    'Hip-hop':{'minimo':85,'maximo':115},
+                    'Jazz and Funk':{'minimo':120,'maximo':125},
+                    'Pop':{'minimo':100,'maximo':130},
+                    'R&B':{'minimo':60,'maximo':80},
+                    'Rock':{'minimo':110,'maximo':140},
+                    'Metal':{'minimo':100,'maximo':160},}
+
+        respuesta = input('Desea agregar un nuevo genero? ')
+        
+        if respuesta == 'si':
+            name = input('Escriba el nombre del nuevo genero: ')
+            vminimo = input('Escriba el valor minimo del Tempo: ')
+            vmaximo = input('Escriba el valor maximo del Tempo: ')
+            dic_genres[name] = {'minimo':vminimo,'maximo':vmaximo}
+        
+        lista = input('Escriba una lista con los generos que desea buscar separados por ", ": ')
+        lista = lista.split(', ')
+
+        ans = controller.reque4(catalog,dic_genres,lista)
+        print(catalog['tempo'])
+
+
+    
+
     else:
         sys.exit(0)
 sys.exit(0)

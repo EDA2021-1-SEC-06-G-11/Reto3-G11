@@ -79,3 +79,11 @@ def reque3(catalog, e, E, d, D):
     main=catalog['tempo']
     ans=model.reque2(main, e, E, d, D)
     return ans
+
+def reque4(catalog,new_genres, lista):
+    main = catalog['tempo']
+    dic = {}
+    for i in lista:
+        dic[i] = new_genres[i]
+        
+    return dic
