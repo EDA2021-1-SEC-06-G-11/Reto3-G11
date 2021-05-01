@@ -41,6 +41,17 @@ def loadData(catalog):
     for event in main_file:
         model.addEvent(catalog, event)
 
+    HVfile = cf.data_dir + 'sentiment_values.csv'
+    sv_file = csv.DictReader(open(HVfile, encoding='utf-8'))
+
+    for pair in sv_file:
+        model.addSentiment(catalog, pair)
+    
+    TSfile = cf.data_dir + 'user_track_hashtag_timestamp-small.csv'
+    ts_sub= csv.DictReader(open(TSfile, encoding='utf-8'))
+
+    for register in ts_sub:
+        model.addRegister(catalog, register)
 
 # Funciones de ordenamiento
 

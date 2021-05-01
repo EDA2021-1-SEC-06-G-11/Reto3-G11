@@ -25,6 +25,7 @@ import sys
 import controller
 from DISClib.ADT import list as lt
 from DISClib.ADT import orderedmap as om
+from DISClib.ADT import map as mp
 assert cf
 
 linea=('==========================================================================================')
@@ -91,7 +92,7 @@ while True:
         print("Cargando información de los archivos ....")
         catalog=controller.initcat()
         controller.loadData(catalog)
-        print('Se encontraron {0} eventos, {1} artistas y {2} pistas únicas'.format(lt.size(catalog['events']), len(catalog['uni_artists'].keys()), len(catalog['uni_tracks'].keys())))
+        print('Se encontraron {0} eventos, {1} artistas y {2} pistas únicas'.format(lt.size(catalog['events']), len(catalog['uni_artists'].keys()), lt.size(mp.keySet(catalog['uni_tracks']))))
 
     elif int(inputs[0]) == 2:
         cc=str(input('Escriba la caracteristica de contenido que le interesa: '))

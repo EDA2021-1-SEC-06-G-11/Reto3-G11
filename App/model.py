@@ -24,6 +24,7 @@
  * Dario Correal - Version inicial
  """
 
+import time
 from typing import Mapping
 import config as cf
 from DISClib.ADT import list as lt
@@ -44,10 +45,11 @@ def initCat():
     catalog={'events':None, 'uni_artists':None, 'uni_tracks':None}
     catalog['events']=lt.newList('SINGLE_LINKED')
     catalog['uni_artists']={}
-    catalog['uni_tracks']={}
+    catalog['uni_tracks']=mp.newMap(maptype='PROBING')
     catalog['sup_inf']={'liveness':'valence', 'acousticness':'speechiness', 'tempo':'instrumentalness', 'energy':'danceability'}
     catalog['inf_sup']={'valence':'liveness', 'speechiness':'acousticness', 'instrumentalness':'tempo', 'danceability':'energy'}
-
+    catalog['hashtag_vader']=mp.newMap(maptype='PROBING')
+    catalog['time_stamps']=om.newMap()
     return catalog
 
 
@@ -57,8 +59,12 @@ def addEvent(catalog, event):
     lt.addFirst(catalog['events'], event)
     artist=event['artist_id']
     track=event['track_id']
+    
+    if mp.contains(catalog['uni_tracks'], track)==False:
+        a={'tempo': event['tempo'], 'hashtags': lt.newList(), 't_vader':0}
+        mp.put(catalog['uni_tracks'], track, a)
+
     catalog['uni_artists'][artist]=1
-    catalog['uni_tracks'][track]=1
 
     y=0
 
@@ -88,6 +94,47 @@ def addEvent(catalog, event):
         lt.addFirst(alpha, event)
 
         y+=1
+    
+def addSentiment(catalog, pair):
+    mp.put(catalog['hashtag_vader'], pair['hashtag'], pair['vader_avg'])
+
+def addRegister(catalog, register):
+    t=time.strptime(register['created_at'], '%Y-%m-%d %H:%M:%S' )
+    tid=register['track_id']
+    htag=register['hashtag']
+
+    hh=t.tm_hour
+    mm=t.tm_min
+    ss=t.tm_sec
+
+    if (om.contains(catalog['time_stamps'], hh))==False:
+        om.put(catalog['time_stamps'], hh, om.newMap())
+
+    hm=om.get(catalog['time_stamps'], hh)
+    hm=me.getValue(hm)
+    if (om.contains(hm, mm))==False:
+        om.put(hm, mm, om.newMap())
+    
+    minmap=om.get(hm, mm)
+    minmap=me.getValue(minmap)
+    if (om.contains(minmap, ss))==False:
+        om.put(minmap, ss, lt.newList())
+    
+    sm=om.get(minmap, ss)
+    main=me.getValue(sm)
+    lt.addFirst(main, tid)
+
+    sub=mp.get(catalog['uni_tracks'], tid)
+    if sub!=None:
+        mini=me.getValue(sub)
+
+        if lt.isPresent(mini['hashtags'], htag)==0 and mp.get(catalog['hashtag_vader'], htag)!=None :
+            vader=mp.get(catalog['hashtag_vader'], htag)
+            vader=me.getValue(vader)
+            if vader!= '':
+                lt.addFirst(mini['hashtags'], htag)
+                mini['t_vader']+=float(vader)
+    
 # Funciones para creacion de datos
 
 
@@ -164,7 +211,6 @@ def count_intervalSUP(main, nums):
         num=lt.getElement(nums, y)
         pair=om.get(main, num)
         mini=me.getValue(pair)
-        ans['events']+=om.size(mini)
         
         sub_nums=om.keySet(mini)
         x=1
@@ -176,6 +222,7 @@ def count_intervalSUP(main, nums):
             z=1
             while z<=lt.size(events):
                 e=lt.getElement(events, z)
+                ans['events']+=1
                 id=e['artist_id']
 
                 ans['idlist'][id]=1
@@ -194,7 +241,6 @@ def count_intervalINF(main, m, M):
         num=lt.getElement(nums, y)
         pair=om.get(main, num)
         mini=me.getValue(pair)
-        ans['events']+=om.size(mini)
 
         if float(om.minKey(mini))>m: m==float(om.minKey(mini))
         if float(om.maxKey(mini))<M: M==float(om.maxKey(mini))
@@ -210,7 +256,7 @@ def count_intervalINF(main, m, M):
             while z<=lt.size(events):
                 e=lt.getElement(events, z)
                 id=e['artist_id']
-
+                ans['events']+=1
                 ans['idlist'][id]=1
                 
                 z+=1
