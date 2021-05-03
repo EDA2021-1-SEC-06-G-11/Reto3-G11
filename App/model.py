@@ -48,6 +48,7 @@ def initCat():
     catalog['uni_tracks']=mp.newMap(maptype='PROBING')
     catalog['sup_inf']={'liveness':'valence', 'acousticness':'speechiness', 'tempo':'instrumentalness', 'energy':'danceability'}
     catalog['inf_sup']={'valence':'liveness', 'speechiness':'acousticness', 'instrumentalness':'tempo', 'danceability':'energy'}
+    catalog['tempo_req4'] = om.newMap(omaptype='BST')
     catalog['hashtag_vader']=mp.newMap(maptype='PROBING')
     catalog['time_stamps']=om.newMap()
     return catalog
@@ -59,6 +60,7 @@ def addEvent(catalog, event):
     lt.addFirst(catalog['events'], event)
     artist=event['artist_id']
     track=event['track_id']
+    updateTempoIndex(catalog['tempo_req4'],event, 'tempo')
     
     if mp.contains(catalog['uni_tracks'], track)==False:
         a={'tempo': event['tempo'], 'hashtags': lt.newList(), 't_vader':0}
@@ -134,8 +136,44 @@ def addRegister(catalog, register):
             if vader!= '':
                 lt.addFirst(mini['hashtags'], htag)
                 mini['t_vader']+=float(vader)
+
+def updateTempoIndex(mapa,event,name):
+    tempo = float(event[name])
+    entry = om.get(mapa, tempo)
+    if entry is None:
+        datentry = newDataEntry(event)
+        om.put(mapa, tempo, datentry)
+    else:
+        datentry = me.getValue(entry)
+    addIndex(datentry,event)
+ 
+    return mapa
+
+def newDataEntry(event):
+    entry = {'lstevents': None}
+
+    entry['lstevents'] = lt.newList('SINGLED_LINKED')
+    return entry
+
+def addIndex(datentry,event):
+    lst = datentry['lstevents']
+    lt.addLast(lst, event)
+    return datentry
     
 # Funciones para creacion de datos
+
+def newGenre(genre,minimo,maximo ,num,lstartists):
+    data = {'events': None,
+            'artists': None,
+            'minimo':None,
+            'maximo': None,
+            'lstartists': None}
+    data['minimo'] = minimo
+    data['maximo'] = maximo
+    data['artists'] = lt.size(lstartists)
+    data['events'] = num
+    data['lstartists'] = lstartists
+    return data
 
 
 # Funciones de consulta
@@ -185,6 +223,25 @@ def reque2(main, e, E, d, D):
                 z+=1
             x+=1
         y+=1
+    return ans
+
+def req4(main,dic):
+    ans = mp.newMap()
+    for genre in dic:
+        lst = om.values(main, dic[genre]['minimo'],dic[genre]['maximo'])
+        num = 0
+        lst_artist = lt.newList()
+        
+        for i in lt.iterator(lst):
+            num += lt.size(i['lstevents'])
+            for i in lt.iterator(i['lstevents']):
+                if i['artist_id'] not in lst_artist:
+                    lt.addLast(lst_artist,i['artist_id'])
+
+        genre1 = newGenre(genre,dic[genre]['minimo'],dic[genre]['maximo'],num, lst_artist)
+        mp.put(ans, genre, genre1)
+            
+
     return ans
     
 

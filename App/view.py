@@ -26,7 +26,10 @@ import controller
 from DISClib.ADT import list as lt
 from DISClib.ADT import orderedmap as om
 from DISClib.ADT import map as mp
+from DISClib.DataStructures import mapentry as me
 assert cf
+default_limit = 10000
+sys.setrecursionlimit(default_limit*10) 
 
 linea=('==========================================================================================')
 """
@@ -69,6 +72,30 @@ def p_rq3(ans, e, E, d, D):
         
         print('Track {0} : {1} , TEMPO:{2} , INSTRUMENTALNESS: {3}'.format(y, e['track_id'], e['tempo'], e['instrumentalness']))
         y+=1
+
+def printResultsR4(ans,lista):
+    for i in lista:
+        n = mp.get(ans,i)
+        events = me.getValue(n)['events']
+        artists = me.getValue(n)['artists']
+        minimo = me.getValue(n)['minimo']
+        maximo = me.getValue(n)['maximo']
+        lstartists = me.getValue(n)['lstartists']
+        print('======== ',i,' ========')
+        print('For ',i,' the tempo is between ',minimo,' and ',maximo,' BPM')
+        print(i,' reproductions: ',events,' with ', artists, ' different artists')
+        print('----- Some artists for ',i,' -----')
+        print('Artist 1: ',lt.getElement(lstartists, 1))
+        print('Artist 2: ',lt.getElement(lstartists, 2))
+        print('Artist 3: ',lt.getElement(lstartists, 3))
+        print('Artist 4: ',lt.getElement(lstartists, 4))
+        print('Artist 5: ',lt.getElement(lstartists, 5))
+        print('Artist 6: ',lt.getElement(lstartists, 6))
+        print('Artist 7: ',lt.getElement(lstartists, 7))
+        print('Artist 8: ',lt.getElement(lstartists, 8))
+        print('Artist 9: ',lt.getElement(lstartists, 9))
+        print('Artist 10: ',lt.getElement(lstartists, 10))
+
 
 def printMenu():
     print("Bienvenido")
@@ -138,9 +165,13 @@ while True:
         
         lista = input('Escriba una lista con los generos que desea buscar separados por ", ": ')
         lista = lista.split(', ')
-
         ans = controller.reque4(catalog,dic_genres,lista)
-        print(catalog['tempo'])
+        n = printResultsR4(ans,lista)
+        print(n)
+        
+    elif int(inputs[0]) == 6:
+        print(om.keySet(catalog['time_stamps']))
+        min_time = input('Escriba la hora minima ')
 
 
     
