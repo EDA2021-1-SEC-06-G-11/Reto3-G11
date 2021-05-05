@@ -170,7 +170,7 @@ def newGenre(genre,minimo,maximo ,num,lstartists):
             'lstartists': None}
     data['minimo'] = minimo
     data['maximo'] = maximo
-    data['artists'] = lt.size(lstartists)
+    data['artists'] = len(lstartists)
     data['events'] = num
     data['lstartists'] = lstartists
     return data
@@ -227,19 +227,22 @@ def reque2(main, e, E, d, D):
 
 def req4(main,dic):
     ans = mp.newMap()
+    total = 0
     for genre in dic:
         lst = om.values(main, dic[genre]['minimo'],dic[genre]['maximo'])
         num = 0
-        lst_artist = lt.newList()
+        lst_artist = []
         
         for i in lt.iterator(lst):
             num += lt.size(i['lstevents'])
-            for i in lt.iterator(i['lstevents']):
-                if i['artist_id'] not in lst_artist:
-                    lt.addLast(lst_artist,i['artist_id'])
+            for j in lt.iterator(i['lstevents']):
+                if j['artist_id'] not in lst_artist:
+                    lst_artist.append(j['artist_id'])
+        total += num
 
         genre1 = newGenre(genre,dic[genre]['minimo'],dic[genre]['maximo'],num, lst_artist)
         mp.put(ans, genre, genre1)
+        mp.put(ans,'total',total)
             
 
     return ans

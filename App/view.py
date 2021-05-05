@@ -38,6 +38,17 @@ Presenta el menu de opciones y por cada seleccion
 se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
+
+dic_genres = {'Reggae':{'minimo':60,'maximo': 90},
+                    'Down-tempo':{'minimo':70,'maximo':100},
+                    'Chill-out':{'minimo':90,'maximo':120},
+                    'Hip-hop':{'minimo':85,'maximo':115},
+                    'Jazz and Funk':{'minimo':120,'maximo':125},
+                    'Pop':{'minimo':100,'maximo':130},
+                    'R&B':{'minimo':60,'maximo':80},
+                    'Rock':{'minimo':110,'maximo':140},
+                    'Metal':{'minimo':100,'maximo':160},}
+
 def p_rq1(ans, cc, m, M):
     print(linea)
     print('Resultados requerimiento 1:')
@@ -74,6 +85,10 @@ def p_rq3(ans, e, E, d, D):
         y+=1
 
 def printResultsR4(ans,lista):
+    print('++++++ Req No. 4 results ++++++')
+    t = mp.get(ans,'total')
+    to = me.getValue(t)
+    print('Total of reproductions: ',to)
     for i in lista:
         n = mp.get(ans,i)
         events = me.getValue(n)['events']
@@ -85,16 +100,16 @@ def printResultsR4(ans,lista):
         print('For ',i,' the tempo is between ',minimo,' and ',maximo,' BPM')
         print(i,' reproductions: ',events,' with ', artists, ' different artists')
         print('----- Some artists for ',i,' -----')
-        print('Artist 1: ',lt.getElement(lstartists, 1))
-        print('Artist 2: ',lt.getElement(lstartists, 2))
-        print('Artist 3: ',lt.getElement(lstartists, 3))
-        print('Artist 4: ',lt.getElement(lstartists, 4))
-        print('Artist 5: ',lt.getElement(lstartists, 5))
-        print('Artist 6: ',lt.getElement(lstartists, 6))
-        print('Artist 7: ',lt.getElement(lstartists, 7))
-        print('Artist 8: ',lt.getElement(lstartists, 8))
-        print('Artist 9: ',lt.getElement(lstartists, 9))
-        print('Artist 10: ',lt.getElement(lstartists, 10))
+        print('Artist 1: ',lstartists[1])
+        print('Artist 2: ',lstartists[2])
+        print('Artist 3: ',lstartists[3])
+        print('Artist 4: ',lstartists[4])
+        print('Artist 5: ',lstartists[5])
+        print('Artist 6: ',lstartists[6])
+        print('Artist 7: ',lstartists[7])
+        print('Artist 8: ',lstartists[8])
+        print('Artist 9: ',lstartists[9])
+        print('Artist 10: ',lstartists[10])
 
 
 def printMenu():
@@ -145,15 +160,7 @@ while True:
         p_rq3(ans, e, E, d, D)
 
     elif int(inputs[0])== 5:
-        dic_genres = {'Reggae':{'minimo':60,'maximo': 90},
-                    'Down-tempo':{'minimo':70,'maximo':100},
-                    'Chill-out':{'minimo':90,'maximo':120},
-                    'Hip-hop':{'minimo':85,'maximo':115},
-                    'Jazz and Funk':{'minimo':120,'maximo':125},
-                    'Pop':{'minimo':100,'maximo':130},
-                    'R&B':{'minimo':60,'maximo':80},
-                    'Rock':{'minimo':110,'maximo':140},
-                    'Metal':{'minimo':100,'maximo':160},}
+
 
         respuesta = input('Desea agregar un nuevo genero? ')
         
@@ -166,8 +173,8 @@ while True:
         lista = input('Escriba una lista con los generos que desea buscar separados por ", ": ')
         lista = lista.split(', ')
         ans = controller.reque4(catalog,dic_genres,lista)
-        n = printResultsR4(ans,lista)
-        print(n)
+        printResultsR4(ans,lista)
+        
         
     elif int(inputs[0]) == 6:
         print(om.keySet(catalog['time_stamps']))
