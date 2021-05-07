@@ -177,8 +177,20 @@ while True:
         
         
     elif int(inputs[0]) == 6:
-        print(om.keySet(catalog['time_stamps']))
-        min_time = input('Escriba la hora minima ')
+        print('Por favor escribir las horas en formato 24h y "hh:mm:ss"')
+        min_time = input('Escriba la hora minima: ')
+        max_time = input('Escriba la hora maxima: ')
+        mntime = min_time.split(':')
+        h = int(mntime[0])
+        m = int(mntime[1])
+        s = int(mntime[2])
+        mxtime = max_time.split(':')
+        H = int(mxtime[0])
+        M = int(mxtime[1])
+        S = int(mxtime[2])
+        ans = controller.reque5(catalog, dic_genres,h,m,s,H,M,S)
+        print(ans)
+        
 
 
     
@@ -186,3 +198,4 @@ while True:
     else:
         sys.exit(0)
 sys.exit(0)
+

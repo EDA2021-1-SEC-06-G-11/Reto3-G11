@@ -105,9 +105,9 @@ def addRegister(catalog, register):
     tid=register['track_id']
     htag=register['hashtag']
 
-    hh=t.tm_hour
-    mm=t.tm_min
-    ss=t.tm_sec
+    hh=int(t.tm_hour)
+    mm=int(t.tm_min)
+    ss=int(t.tm_sec)
 
     if (om.contains(catalog['time_stamps'], hh))==False:
         om.put(catalog['time_stamps'], hh, om.newMap())
@@ -246,6 +246,25 @@ def req4(main,dic):
             
 
     return ans
+
+def req5(mainh, mainhash, new_genres,h,m,s,H,M,S):
+    tracks = []
+    hours = om.values(mainh,h,H)
+    low_limit = lt.firstElement(hours)
+    max_limit = lt.lastElement(hours)
+    for i in lt.iterator(hours):
+        if i == low_limit:
+            first = om.values(i,m,60)
+            low_sec = lt.firstElement(first)
+            for sec in lt.iterator(first):
+                if sec == low_sec:
+                    first_sec = om.values(sec,s,60)
+                    for j in range(1,lt.size(first_sec)):
+                        ele = lt.getElement(first_sec, j)
+                        tracks.append(ele)
+
+  
+    return first_sec
     
 
 # Funciones utilizadas para comparar elementos dentro de una lista

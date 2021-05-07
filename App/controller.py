@@ -87,3 +87,11 @@ def reque4(catalog,new_genres, lista):
         dic[i] = new_genres[i]
     ans = model.req4(main,dic)
     return ans
+
+def reque5(catalog, new_genres,h,m,s,H,M,S):
+    mainh = catalog['time_stamps']
+    mainhash = catalog['hashtag_vader']
+    ans = model.req5(mainh,mainhash,new_genres,h,m,s,H,M,S)
+
+    return ans
+
