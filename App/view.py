@@ -20,6 +20,7 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 import random
+import time
 import config as cf
 import sys
 import controller
@@ -39,15 +40,15 @@ se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
 
-dic_genres = {'Reggae':{'minimo':60,'maximo': 90},
-                    'Down-tempo':{'minimo':70,'maximo':100},
-                    'Chill-out':{'minimo':90,'maximo':120},
-                    'Hip-hop':{'minimo':85,'maximo':115},
-                    'Jazz and Funk':{'minimo':120,'maximo':125},
-                    'Pop':{'minimo':100,'maximo':130},
-                    'R&B':{'minimo':60,'maximo':80},
-                    'Rock':{'minimo':110,'maximo':140},
-                    'Metal':{'minimo':100,'maximo':160},}
+dic_genres = {'Jazz and Funk':{'minimo':120,'maximo':125},
+                'R&B':{'minimo':60,'maximo':80},
+                'Metal':{'minimo':100,'maximo':160},
+                'Rock':{'minimo':110,'maximo':140},
+                'Pop':{'minimo':100,'maximo':130},
+                'Chill-out':{'minimo':90,'maximo':120},
+                'Hip-hop':{'minimo':85,'maximo':115},
+                'Down-tempo':{'minimo':70,'maximo':100},
+                'Reggae':{'minimo':60,'maximo': 90},}
 
 def p_rq1(ans, cc, m, M):
     print(linea)
@@ -110,6 +111,57 @@ def printResultsR4(ans,lista):
         print('Artist 8: ',lstartists[8])
         print('Artist 9: ',lstartists[9])
         print('Artist 10: ',lstartists[10])
+
+def printResultsR5(dic,min_t,max_t):
+    total = 0
+    mayor = 0
+    genre = ''
+    dic_genre = None
+    for i in dic:
+        total += dic[i]['reps']
+        if dic[i]['reps'] > mayor:
+            mayor = dic[i]['reps']
+            dic_genre = dic[i]
+            genre = i
+
+
+    print('++++++ Req No. 5 results... ++++++')
+    print('There is a total of ',total,' reproductions between ',min_t,' and ',max_t)
+    print('====================== GENRES SORTED REPRODUCTIONS ======================')
+    for m in range(0,9):
+        mayor1 = 0
+        lol = ''
+        for j in dic:
+            if dic[j]['reps'] > mayor1:
+                mayor1 = dic[j]['reps']
+                lol = j
+        x = dic.pop(lol)
+        print('Top',(m+1),': ',lol,' with',mayor1,' reps')
+    print('...')
+    print('')
+    print('The TOP GENRE is ',genre,' with ',dic_genre['reps'],' reproductions...')
+    print('')
+    print('========================== ',genre,' SENTIMENT ANALYSIS ==========================')
+    print(genre, 'has ',dic_genre['unique'],' unique tracks...')
+    print('The first TOP 10 tracks are...')
+    print('')
+    for k in range(0,10):
+        mayor2 = 0
+        lol1 = ''
+        for tracks in dic_genre['tracks']:
+            if dic_genre['tracks'][tracks]['hashtag'] >= mayor2:
+                mayor2 = dic_genre['tracks'][tracks]['hashtag']
+                vader = dic_genre['tracks'][tracks]['vader']
+                lol1 = tracks
+        y = dic_genre['tracks'].pop(lol1)
+        print('TOP ',(k+1),'track: ',lol1,' with ',mayor2,' hashtag and VADER = ',vader)
+
+        
+
+
+        
+
+
 
 
 def printMenu():
@@ -180,19 +232,12 @@ while True:
         print('Por favor escribir las horas en formato 24h y "hh:mm:ss"')
         min_time = input('Escriba la hora minima: ')
         max_time = input('Escriba la hora maxima: ')
-        mntime = min_time.split(':')
-        h = int(mntime[0])
-        m = int(mntime[1])
-        s = int(mntime[2])
-        mxtime = max_time.split(':')
-        H = int(mxtime[0])
-        M = int(mxtime[1])
-        S = int(mxtime[2])
-        ans = controller.reque5(catalog, dic_genres,h,m,s,H,M,S)
-        print(ans)
-        
+        min_t = time.strptime(min_time,'%H:%M:%S')
+        max_t = time.strptime(max_time,'%H:%M:%S')
+        ans = controller.reque5(catalog, dic_genres,min_t,max_t)
+        printResultsR5(ans,min_time,max_time)
 
-
+ 
     
 
     else:

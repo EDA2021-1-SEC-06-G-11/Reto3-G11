@@ -35,11 +35,12 @@ def initcat():
 
 # Funciones para la carga de datos
 def loadData(catalog):
-    Dfile = cf.data_dir + 'context_content_features-small.csv'
-    main_file = csv.DictReader(open(Dfile, encoding='utf-8'))
+    TSfile = cf.data_dir + 'user_track_hashtag_timestamp-small.csv'
+    ts_sub= csv.DictReader(open(TSfile, encoding='utf-8'))
 
-    for event in main_file:
-        model.addEvent(catalog, event)
+    for register in ts_sub:
+        model.createmap2file(catalog,register,'track')
+        
 
     HVfile = cf.data_dir + 'sentiment_values.csv'
     sv_file = csv.DictReader(open(HVfile, encoding='utf-8'))
@@ -47,11 +48,17 @@ def loadData(catalog):
     for pair in sv_file:
         model.addSentiment(catalog, pair)
     
-    TSfile = cf.data_dir + 'user_track_hashtag_timestamp-small.csv'
-    ts_sub= csv.DictReader(open(TSfile, encoding='utf-8'))
 
-    for register in ts_sub:
-        model.addRegister(catalog, register)
+    Dfile = cf.data_dir + 'context_content_features-small.csv'
+    main_file = csv.DictReader(open(Dfile, encoding='utf-8'))
+    for event in main_file:
+        model.addEvent(catalog, event)
+        
+    
+        
+        
+
+
 
 # Funciones de ordenamiento
 
@@ -88,10 +95,9 @@ def reque4(catalog,new_genres, lista):
     ans = model.req4(main,dic)
     return ans
 
-def reque5(catalog, new_genres,h,m,s,H,M,S):
-    mainh = catalog['time_stamps']
-    mainhash = catalog['hashtag_vader']
-    ans = model.req5(mainh,mainhash,new_genres,h,m,s,H,M,S)
+def reque5(catalog, dic_genres,min_t,max_t):
+    main = catalog['time_stamps']
+    ans = model.req5(catalog,main,dic_genres,min_t,max_t)
 
     return ans
 

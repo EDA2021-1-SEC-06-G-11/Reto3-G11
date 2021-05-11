@@ -51,16 +51,34 @@ def initCat():
     catalog['tempo_req4'] = om.newMap(omaptype='BST')
     catalog['hashtag_vader']=mp.newMap(maptype='PROBING')
     catalog['time_stamps']=om.newMap()
+    catalog['track'] = mp.newMap()
+    catalog['track_req5'] = mp.newMap()
     return catalog
 
 
 # Funciones para agregar informacion al catalogo
+def createmap2file(catalog,event,name):
+
+    mapa = catalog[name]
+    exists = mp.contains(mapa,event['track_id'])
+    if exists:
+        entry = mp.get(mapa,event['track_id'])
+        track = me.getValue(entry)
+    else:
+        track = newDataEntry(event)
+        mp.put(mapa, event['track_id'],track)
+    lt.addLast(track['lstevents'], event)
+
+
 def addEvent(catalog, event):
     ccs=['energy', 'tempo', 'liveness', 'acousticness']
     lt.addFirst(catalog['events'], event)
     artist=event['artist_id']
     track=event['track_id']
+
     updateTempoIndex(catalog['tempo_req4'],event, 'tempo')
+
+
     
     if mp.contains(catalog['uni_tracks'], track)==False:
         a={'tempo': event['tempo'], 'hashtags': lt.newList(), 't_vader':0}
@@ -96,47 +114,38 @@ def addEvent(catalog, event):
         lt.addFirst(alpha, event)
 
         y+=1
+
+    #para crear arbol de fechas--------------------------
+    
+    mapa_track = mp.get(catalog['track'],event['track_id'])
+    info ={}
+    list_track = me.getValue(mapa_track)['lstevents']
+    for i in lt.iterator(list_track):
+        if event['user_id']==i['user_id'] and event['created_at']==i['created_at']:
+            hashtag = mp.get(catalog['hashtag_vader'],i['hashtag'])
+            if hashtag != None:
+                h = hashtag['key']
+                vader = hashtag['value']
+                event['hashtag'] = h
+                event['vader'] = vader
+    addTimeStamp(catalog['time_stamps'],event)
+
+
+    #----------------------------------------------------
+
+def addTimeStamp(main, event):
+    date = event['created_at'].split(' ')
+
+
+    final_time = time.strptime(date[1], '%H:%M:%S')
+    updateTimeIndex(main, event, final_time)
+
+
     
 def addSentiment(catalog, pair):
-    mp.put(catalog['hashtag_vader'], pair['hashtag'], pair['vader_avg'])
-
-def addRegister(catalog, register):
-    t=time.strptime(register['created_at'], '%Y-%m-%d %H:%M:%S' )
-    tid=register['track_id']
-    htag=register['hashtag']
-
-    hh=int(t.tm_hour)
-    mm=int(t.tm_min)
-    ss=int(t.tm_sec)
-
-    if (om.contains(catalog['time_stamps'], hh))==False:
-        om.put(catalog['time_stamps'], hh, om.newMap())
-
-    hm=om.get(catalog['time_stamps'], hh)
-    hm=me.getValue(hm)
-    if (om.contains(hm, mm))==False:
-        om.put(hm, mm, om.newMap())
+    if pair['vader_avg'] != '':
+        mp.put(catalog['hashtag_vader'], pair['hashtag'], pair['vader_avg'])
     
-    minmap=om.get(hm, mm)
-    minmap=me.getValue(minmap)
-    if (om.contains(minmap, ss))==False:
-        om.put(minmap, ss, lt.newList())
-    
-    sm=om.get(minmap, ss)
-    main=me.getValue(sm)
-    lt.addFirst(main, tid)
-
-    sub=mp.get(catalog['uni_tracks'], tid)
-    if sub!=None:
-        mini=me.getValue(sub)
-
-        if lt.isPresent(mini['hashtags'], htag)==0 and mp.get(catalog['hashtag_vader'], htag)!=None :
-            vader=mp.get(catalog['hashtag_vader'], htag)
-            vader=me.getValue(vader)
-            if vader!= '':
-                lt.addFirst(mini['hashtags'], htag)
-                mini['t_vader']+=float(vader)
-
 def updateTempoIndex(mapa,event,name):
     tempo = float(event[name])
     entry = om.get(mapa, tempo)
@@ -148,6 +157,18 @@ def updateTempoIndex(mapa,event,name):
     addIndex(datentry,event)
  
     return mapa
+
+def updateTimeIndex(mapa,event,time):
+    entry = om.get(mapa, time)
+    if entry is None:
+        datentry = newDataEntry(event)
+        om.put(mapa, time, datentry)
+    else:
+        datentry = me.getValue(entry)
+    addIndex(datentry,event)
+ 
+    return mapa
+
 
 def newDataEntry(event):
     entry = {'lstevents': None}
@@ -247,25 +268,65 @@ def req4(main,dic):
 
     return ans
 
-def req5(mainh, mainhash, new_genres,h,m,s,H,M,S):
-    tracks = []
-    hours = om.values(mainh,h,H)
-    low_limit = lt.firstElement(hours)
-    max_limit = lt.lastElement(hours)
-    for i in lt.iterator(hours):
-        if i == low_limit:
-            first = om.values(i,m,60)
-            low_sec = lt.firstElement(first)
-            for sec in lt.iterator(first):
-                if sec == low_sec:
-                    first_sec = om.values(sec,s,60)
-                    for j in range(1,lt.size(first_sec)):
-                        ele = lt.getElement(first_sec, j)
-                        tracks.append(ele)
+def req5(catalog,main, dic_genres, min_t, max_t):
+    lol = []
+    lista = om.values(main,min_t,max_t)
+    tempo = om.newMap()
+    for i in lt.iterator(lista):
+        for j in lt.iterator(i['lstevents']):
+            updateTempoIndex(tempo, j,'tempo')
+    dic = {}
+    for k in dic_genres:
+        track_map = mp.newMap()
+        lista_genre = om.values(tempo,dic_genres[k]['minimo'],dic_genres[k]['maximo'])
+        num = 0
+        val = 0
+        dic[k] = {}
+        dic[k]['tracks'] = {}
+        for value in lt.iterator(lista_genre):
+            for track in lt.iterator(value['lstevents']):
+                num += 1
+                updateTrackIndex(track_map, track, track['track_id'])
+        u = mp.valueSet(track_map)
+        for unique in lt.iterator(u):
+            for l in lt.iterator(unique['lstevents']):
+                if ('hashtag' in l):
+                    val += 1
+        v = mp.keySet(track_map)
+        for key in lt.iterator(v):
+            tra = mp.get(track_map,key)
+            trak = me.getValue(tra)['lstevents']
+            vader = 0
+            hashtag = 0
+            vader_avg = 0
+            for b in lt.iterator(trak):
+                
+                if 'hashtag' in b:
+                    hashtag += 1
+                    vader += float(b['vader'])
+            if hashtag != 0:
+                vader_avg = vader/hashtag
+                dic[k]['tracks'][key] = {}
+                dic[k]['tracks'][key]['hashtag'] = hashtag
+                dic[k]['tracks'][key]['vader'] = vader_avg
 
-  
-    return first_sec
+        dic[k]['reps'] = num
+        dic[k]['unique'] = val
+                
+
     
+    return dic
+
+def updateTrackIndex(mapa,track,key):
+    entry = mp.get(mapa, key)
+    if entry is None:
+        datentry = newDataEntry(track)
+        mp.put(mapa, key, datentry)
+    else:
+        datentry = me.getValue(entry)
+    addIndex(datentry,track)
+ 
+    return mapa
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
